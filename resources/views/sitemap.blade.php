@@ -38,7 +38,7 @@
 
 
     @foreach ($books as $book)
-        @if ($loop->first || $loop->iteration % 3 == 0)
+        @if ($loop->first || $loop->iteration % 3 == 1)
         <div class="row">
         @endif
 
@@ -95,7 +95,7 @@
                 </ul>
             </div>
 
-        @if ($loop->last || $loop->iteration % 3 == 2)
+        @if ($loop->last || $loop->iteration % 3 == 0)
         </div>
         @endif
     @endforeach
