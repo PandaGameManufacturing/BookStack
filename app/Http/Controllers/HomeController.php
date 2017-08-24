@@ -41,6 +41,22 @@ class HomeController extends Controller
         ]);
     }
 
+
+
+    /**
+     * Display the sitemap page.
+     * @return Response
+     */
+    public function siteIndex()
+    {
+        $books = $this->entityRepo->getAll('book', false);
+
+        return view('sitemap', [
+            'books' => $books
+        ]);
+    }
+
+
     /**
      * Get a js representation of the current translations
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response

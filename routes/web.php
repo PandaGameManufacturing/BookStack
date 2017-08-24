@@ -136,6 +136,7 @@ Route::group(['middleware' => 'auth'], function () {
     // Other Pages
     Route::get('/', 'HomeController@index');
     Route::get('/home', 'HomeController@index');
+    Route::get('/sitemap', 'HomeController@siteIndex');
 
     // Settings
     Route::group(['prefix' => 'settings'], function() {

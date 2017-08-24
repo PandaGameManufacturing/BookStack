@@ -56,6 +56,7 @@
                         </div>
                         <div class="links text-center">
                             <a href="{{ baseUrl('/books') }}"><i class="zmdi zmdi-book"></i>{{ trans('entities.books') }}</a>
+                            <a href="{{ baseUrl('/sitemap') }}"><i class="zmdi zmdi-view-toc"></i>{{ trans('entities.sitemap') }}</a>
                             @if(signedInUser() && userCan('settings-manage'))
                                 <a href="{{ baseUrl('/settings') }}"><i class="zmdi zmdi-settings"></i>{{ trans('settings.settings') }}</a>
                             @endif
