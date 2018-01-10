@@ -20,6 +20,7 @@ return [
     'ldap_extension_not_installed' => 'LDAP PHP extension not installed',
     'ldap_cannot_connect' => 'Cannot connect to ldap server, Initial connection failed',
     'social_no_action_defined' => 'No action defined',
+    'social_login_bad_response' => "Error received during :socialAccount login: \n:error",
     'social_account_in_use' => 'This :socialAccount account is already in use, Try logging in via the :socialAccount option.',
     'social_account_email_in_use' => 'The email :email is already in use. If you already have an account you can connect your :socialAccount account from your profile settings.',
     'social_account_existing' => 'This :socialAccount is already attached to your profile.',
@@ -41,6 +42,7 @@ return [
 
     // Pages
     'page_draft_autosave_fail' => 'Failed to save draft. Ensure you have internet connection before saving this page',
+    'page_custom_home_deletion' => 'Cannot delete a page while it is set as a homepage',
 
     // Entities
     'entity_not_found' => 'Entity not found',
@@ -63,7 +65,7 @@ return [
     // Comments
     'comment_list' => 'An error occurred while fetching the comments.',
     'cannot_add_comment_to_draft' => 'You cannot add comments to a draft.',
-    'comment_add' => 'An error occurred while adding the comment.',
+    'comment_add' => 'An error occurred while adding / updating the comment.',
     'comment_delete' => 'An error occurred while deleting the comment.',
     'empty_comment' => 'Cannot add an empty comment.',
 

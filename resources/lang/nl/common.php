@@ -10,6 +10,7 @@ return [
     'save' => 'Opslaan',
     'continue' => 'Doorgaan',
     'select' => 'Kies',
+    'more' => 'Meer',
 
     /**
      * Form Labels
@@ -17,7 +18,8 @@ return [
     'name' => 'Naam',
     'description' => 'Beschrijving',
     'role' => 'Rol',
-
+    'cover_image' => 'Omslagfoto',
+    'cover_image_description' => 'Deze afbeelding moet ongeveer 300x170px zijn.',
     /**
      * Actions
      */
@@ -33,7 +35,7 @@ return [
     'search_clear' => 'Zoekopdracht wissen',
     'reset' => 'Reset',
     'remove' => 'Verwijderen',
-
+    'add' => 'Toevoegen',
 
     /**
      * Misc
@@ -43,6 +45,7 @@ return [
     'no_items' => 'Geen items beschikbaar',
     'back_to_top' => 'Terug naar boven',
     'toggle_details' => 'Details Weergeven',
+    'toggle_thumbnails' => 'Thumbnails Weergeven',
 
     /**
      * Header

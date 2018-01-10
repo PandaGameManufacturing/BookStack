@@ -120,10 +120,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/ajax/search/entities', 'SearchController@searchEntitiesAjax');
 
     // Comments
-    Route::post('/ajax/page/{pageId}/comment/', 'CommentController@save');
-    Route::put('/ajax/page/{pageId}/comment/{commentId}', 'CommentController@save');
+    Route::post('/ajax/page/{pageId}/comment', 'CommentController@savePageComment');
+    Route::put('/ajax/comment/{id}', 'CommentController@update');
     Route::delete('/ajax/comment/{id}', 'CommentController@destroy');
-    Route::get('/ajax/page/{pageId}/comments/', 'CommentController@getPageComments');
 
     // Links
     Route::get('/link/{id}', 'PageController@redirectFromLink');
@@ -137,6 +136,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/', 'HomeController@index');
     Route::get('/home', 'HomeController@index');
     Route::get('/sitemap', 'HomeController@siteIndex');
+    Route::get('/custom-head-content', 'HomeController@customHeadContent');
 
     // Settings
     Route::group(['prefix' => 'settings'], function() {

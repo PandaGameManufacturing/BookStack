@@ -4,6 +4,7 @@ use BookStack\Book;
 use BookStack\Chapter;
 use BookStack\Entity;
 use BookStack\Exceptions\NotFoundException;
+use BookStack\Exceptions\NotifyException;
 use BookStack\Page;
 use BookStack\PageRevision;
 use BookStack\Services\AttachmentService;
@@ -137,10 +138,15 @@ class EntityRepo
      * @param string $type
      * @param integer $id
      * @param bool $allowDrafts
+     * @param bool $ignorePermissions
      * @return Entity
      */
-    public function getById($type, $id, $allowDrafts = false)
+    public function getById($type, $id, $allowDrafts = false, $ignorePermissions = false)
     {
+        if ($ignorePermissions) {
+            $entity = $this->getEntity($type);
+            return $entity->newQuery()->find($id);
+        }
         return $this->entityQuery($type, $allowDrafts)->find($id);
     }
 
@@ -436,9 +442,10 @@ class EntityRepo
      */
     public function updateEntityPermissionsFromRequest($request, Entity $entity)
     {
-        $entity->restricted = $request->has('restricted') && $request->get('restricted') === 'true';
+        $entity->restricted = $request->get('restricted', '') === 'true';
         $entity->permissions()->delete();
-        if ($request->has('restrictions')) {
+
+        if ($request->filled('restrictions')) {
             foreach ($request->get('restrictions') as $roleId => $restrictions) {
                 foreach ($restrictions as $action => $value) {
                     $entity->permissions()->create([
@@ -448,6 +455,7 @@ class EntityRepo
                 }
             }
         }
+
         $entity->save();
         $this->permissionService->buildJointPermissionsForEntity($entity);
     }
@@ -547,8 +555,9 @@ class EntityRepo
      */
     protected function nameToSlug($name)
     {
-        $slug = str_replace(' ', '-', strtolower($name));
-        $slug = preg_replace('/[\+\/\\\?\@\}\{\.\,\=\[\]\#\&\!\*\'\;\:\$\%]/', '', $slug);
+        $slug = preg_replace('/[\+\/\\\?\@\}\{\.\,\=\[\]\#\&\!\*\'\;\:\$\%]/', '', mb_strtolower($name));
+        $slug = preg_replace('/\s{2,}/', ' ', $slug);
+        $slug = str_replace(' ', '-', $slug);
         if ($slug === "") $slug = substr(md5(rand(1, 500)), 0, 5);
         return $slug;
     }
@@ -671,9 +680,10 @@ class EntityRepo
     /**
      * Render the page for viewing, Parsing and performing features such as page transclusion.
      * @param Page $page
+     * @param bool $ignorePermissions
      * @return mixed|string
      */
-    public function renderPage(Page $page)
+    public function renderPage(Page $page, $ignorePermissions = false)
     {
         $content = $page->html;
         $matches = [];
@@ -685,19 +695,19 @@ class EntityRepo
             $pageId = intval($splitInclude[0]);
             if (is_nan($pageId)) continue;
 
-            $page = $this->getById('page', $pageId);
-            if ($page === null) {
+            $matchedPage = $this->getById('page', $pageId, false, $ignorePermissions);
+            if ($matchedPage === null) {
                 $content = str_replace($matches[0][$index], '', $content);
                 continue;
             }
 
             if (count($splitInclude) === 1) {
-                $content = str_replace($matches[0][$index], $page->html, $content);
+                $content = str_replace($matches[0][$index], $matchedPage->html, $content);
                 continue;
             }
 
             $doc = new DOMDocument();
-            $doc->loadHTML(mb_convert_encoding('<body>'.$page->html.'</body>', 'HTML-ENTITIES', 'UTF-8'));
+            $doc->loadHTML(mb_convert_encoding('<body>'.$matchedPage->html.'</body>', 'HTML-ENTITIES', 'UTF-8'));
             $matchingElem = $doc->getElementById($splitInclude[1]);
             if ($matchingElem === null) {
                 $content = str_replace($matches[0][$index], '', $content);
@@ -1067,6 +1077,7 @@ class EntityRepo
     /**
      * Destroy a given page along with its dependencies.
      * @param Page $page
+     * @throws NotifyException
      */
     public function destroyPage(Page $page)
     {
@@ -1077,6 +1088,12 @@ class EntityRepo
         $page->permissions()->delete();
         $this->permissionService->deleteJointPermissionsForEntity($page);
         $this->searchService->deleteEntityTerms($page);
+
+        // Check if set as custom homepage
+        $customHome = setting('app-homepage', '0:');
+        if (intval($page->id) === intval(explode(':', $customHome)[0])) {
+            throw new NotifyException(trans('errors.page_custom_home_deletion'), $page->getUrl());
+        }
 
         // Delete Attached Files
         $attachmentService = app(AttachmentService::class);

@@ -36,11 +36,19 @@ class BookController extends Controller
      */
     public function index()
     {
-        $books = $this->entityRepo->getAllPaginated('book', 10);
+        $books = $this->entityRepo->getAllPaginated('book', 20);
         $recents = $this->signedIn ? $this->entityRepo->getRecentlyViewed('book', 4, 0) : false;
         $popular = $this->entityRepo->getPopular('book', 4, 0);
-        $this->setPageTitle('Books');
-        return view('books/index', ['books' => $books, 'recents' => $recents, 'popular' => $popular]);
+        $new = $this->entityRepo->getRecentlyCreated('book', 4, 0);
+        $booksViewType = setting()->getUser($this->currentUser, 'books_view_type', 'list');
+        $this->setPageTitle(trans('entities.books'));
+        return view('books/index', [
+            'books' => $books,
+            'recents' => $recents,
+            'popular' => $popular,
+            'new' => $new, 
+            'booksViewType' => $booksViewType
+        ]);
     }
 
     /**
@@ -84,7 +92,12 @@ class BookController extends Controller
         $bookChildren = $this->entityRepo->getBookChildren($book);
         Views::add($book);
         $this->setPageTitle($book->getShortName());
-        return view('books/show', ['book' => $book, 'current' => $book, 'bookChildren' => $bookChildren]);
+        return view('books/show', [
+            'book' => $book,
+            'current' => $book,
+            'bookChildren' => $bookChildren,
+            'activity' => Activity::entityActivity($book, 20, 0)
+        ]);
     }
 
     /**
@@ -114,9 +127,9 @@ class BookController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'string|max:1000'
         ]);
-        $book = $this->entityRepo->updateFromInput('book', $book, $request->all());
-        Activity::add($book, 'book_update', $book->id);
-        return redirect($book->getUrl());
+         $book = $this->entityRepo->updateFromInput('book', $book, $request->all());
+         Activity::add($book, 'book_update', $book->id);
+         return redirect($book->getUrl());
     }
 
     /**
@@ -172,7 +185,7 @@ class BookController extends Controller
         $this->checkOwnablePermission('book-update', $book);
 
         // Return if no map sent
-        if (!$request->has('sort-tree')) {
+        if (!$request->filled('sort-tree')) {
             return redirect($book->getUrl());
         }
 
